@@ -1,0 +1,112 @@
+<h4>
+    Task: Participant's build and the cdk project to create EKS Cluster in their account<br /><br />  
+    Expected Result: The EKS Cluster is created by cdk code and participants can now view the kuberenetes service via kube controller (kubectl) command line utilty<br /><br />
+    </h4>
+    
+    <h3>1. Installation of tools</h3><br />
+    <b>Note:</b> Its assumed that the participants are using a linux environment
+    and well versed in few basic linux commands.<br /><br /> 
+    <h5>a. Install kubectl<br /></h5>	
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"<br />
+    
+    #kubectl Installation
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl<br />
+    chmod +x kubectl<br />
+    mkdir -p ˜/.local/bin/kubectl<br />
+    mv ./kubectl ˜/.local/bin/kubectl<br />
+    export PATH="˜/.local/bin/kubectl:$PATH"
+    #Check if kubectl is correctly installed.
+    kubectl --version
+        
+    <h4>b. Install git</h4>
+    sudo yum install git -y<br />
+    git version<br /><br />
+    <h4>c. Install node</h4>
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash<br />
+    . ~/.nvm/nvm.sh<br />
+    nvm install node 15.5.1<br />
+    <b>IMPORTANT:</b> Node version less than 15.6 is expected for cdk code to work perfectly, else you will get an error in cloudformation deploy.<br />
+    node -e "console.log('Running Node.js ' + process.version)"<br />
+    <br />
+    <h4>d. Clone the git repository</h4><br />
+    CD to the directory where you want to create the project for simplicity we assume the directory
+    /home/jam
+    
+    assuming you are at /home run the below commands<br>
+    mkdir jam<br>
+    cd jam<br>
+    aws --version<br />
+    cdk --version<br />
+    cdk doctor<br />
+    git clone https://github.com/iyerb/task1.git<br />	
+    This will Clone the project code for creating the default eks cluster<br />
+    npm install @aws-cdk/aws-eks cdk8s cdk8s-plus constructs<br />
+    npm run build<br />
+    cdk synth<br />
+    <h4>e. Boot Strap AWS Account and Region and run cdk deploy </h4><br />
+
+    cdk cdk bootstrap aws://$ACCOUNT/$REGION<br />
+    where $ACCOUNT = JAM AWS Account and $REGION = JAM AWS Region<br />
+    cdk deploy<br />
+    This will approximately take 20 mins<br />
+            
+    
+   
+    
+    
+    Change the directory to /home/ec2-user/jam/eks-demo-stack
+    
+    <h3 style="color:blue">Run below command in sequence</h3><br />
+    Build the cdk project<br />
+    npm run build<br /><br />
+    Synthesize the cloudformation template<br />
+    cdk synth<br /><br />
+    Check what is the incremental changes in the synthesized template<br />
+    cdk diff<br /><br />
+    
+    <h4><b>CDK Bootstrapping</b></h4><br />
+    ACCOUNT=$(aws sts get-caller-identity --query Account --output text)<br />
+    REGION=$(aws configure get region)<br />
+    
+    cdk bootstrap aws://$ACCOUNT/$REGION<br />
+    <h4><b>Deploy the changes</b></h4><b><br />
+    cdk deploy<br /><br />
+    
+    
+    The deploy command will take approximately 10 minutes to complete. And post completion below outputs will be generated
+    <h4>
+    Outputs:
+      
+    EksDemoStack.ckdeksclusterConfigCommandE04DCF13 = aws eks update-kubeconfig --name ckdekscluster91BD07D9-b77a056c8b304c29894ed2409c09e062 --region AWS_REGION --ro
+    le-arn arn:aws:iam::AWS_ACCOUNT:role/EksDemoStack-ckdeksclusterMastersRoleBE3D5109-4N9G1Z9I7KR4
+    
+    EksDemoStack.ckdeksclusterGetTokenCommand5DD9E553 = aws eks get-token --cluster-name ckdekscluster91BD07D9-b77a056c8b304c29894ed2409c09e062 --region AWS_REGION --
+    role-arn arn:aws:iam::AWS_ACCOUNT:role/EksDemoStack-ckdeksclusterMastersRoleBE3D5109-4N9G1Z9I7KR4
+    </h4>
+    The first output EKSDemoStack.ckdeksclusterConfigCommandE04DCF13 is used to update the kubeconfig with the the ekscluster configuration and IAM Role to access the ekscluster.
+    This helps you configure and check the cluster from 'kubectl cli' as if the cluster is existing locally. The IAM Role has the necessary policies to access the eks cluster
+    
+    The second command gives use a temporary session token to access eks cluster 
+    
+    Copy first command after the '=' sign and execute it
+    Copy second command after the '=' sign and execute it
+    
+    Then run 
+    
+    kubectl get svc<br />
+    
+    Your output should be similar to one below
+    
+    
+    
+    NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)          AGE<br />
+    service/kubernetes   ClusterIP      172.20.0.1                 443/TCP      	  8d
+    
+    <b>Note:</b><br />Check for any errors during exectution in below logs in your ec2 instance
+    
+    /var/log/cloud-init.log and<br />
+    /var/log/cloud-init-output.log
+    
+    
+    
+    </b>
